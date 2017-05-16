@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- 上述3个meta标签*必须*放在最前面，任何其他内容都*必须*跟随其后！ -->
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="/favicon.ico">
+
+    <title>班级说说</title>
+    <!-- Bootstrap core CSS -->
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom styles for this template -->
+    <link href="/css/jumbotron.css" rel="stylesheet">
+    <style type="text/css">
+        .grid {
+            height: 200px;
+        }
+
+        .avatar {
+            border-radius: 50%;
+        }
+
+        #quanbushuoshuo {
+            height: 500px;
+        }
+        #success{
+        	color: #fff;
+        	display: none;
+        	background: #449d44;
+        }
+        .footer{
+        	margin: 30px;
+        	text-align: center;
+        }
+    </style>
+    <script src="/js/jquery-1.11.3.min.js"></script>
+    <script src="/js/bootstrap.min.js"></script>
+    <script src="/js/underscore-noflect.js"></script>
+</head>
+
+<body>
+
+<%include header.ejs %>
+<!-- Main jumbotron for a primary marketing message or call to action -->
+<div class="jumbotron">
+   <% if(!login==1){ %>
+    <!-- 没有登陆的时候，显示登陆提示-->
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-6">
+                <h1>
+                    欢迎！
+                </h1>
+
+                <p>班级说说是我们交流的园地，欢迎注册！</p>
+
+                <p><a class="btn btn-primary btn-lg" href="/regist" role="button">注册</a></p>
+            </div>
+            <div class="col-lg-6">
+                <p>已有账号登陆</p>
+
+                <form>
+                    <div class="form-group">
+                        <label for="username">用户名</label>
+                        <input type="text" class="form-control" id="username" placeholder="用户名，可以是中文，不能和别人重复">
+                    </div>
+                    <div class="form-group">
+                        <label for="password">密码</label>
+                        <input type="password" class="form-control" id="password" placeholder="密码，至少6位">
+                    </div>
+                    <button type="button" id="denglu" class="btn btn-success">登陆</button>
+                </form>
+                <div class="alert alert-danger" role="alert" id="cuowukuang" style="display:none;"></div>
+            </div>
+        </div>
+    </div>
+   <% }else{ %>
+     <div class="container">
+        <div class="row">
+            <div class="col-lg-1" style="text-align: center;width: 130px;">
+                <a href="/setavatar">
+                	<img class="avatar" src="/avatar/<%= avatar %>" alt=""/>
+                	<span>设置头像<span>
+                </a>
+                
+            </div>
+            <div class="col-lg-6 col-lg-offset-1">
+                <p><%= username %></p>
+                <textarea name="content" id="content" cols="80" rows="4"></textarea>
+                <button type="button" id="deliver" class="btn btn-success">发表说说</button>
+                <div class="alert alert-success" role="alert" id="success" >发表说说成功！</div>
+            </div>
+        </div>
+    </div>
+    
+   <% }%>
+
+</div>
+
+<div class="container">
+   
+    <nav>
+        <ul class="pagination">
+
+        </ul>
+    </nav>
+    <!--在这里获取说说的总条数，然后再进行分页	-->
+    <script type="text/javascript">
+    	//进行分页的ajax
+    	//1.分页-->2.插入pagination-->3.默认第一个li为active-->4.给每个li添加click事件
+    	//如果click事件用原生写，记得委托
+    	$.get('/getshuoamount',result=>{
+    		console.log(result);
+    		//获得result之后，先要parseInt一下
+    		//1 2 
+    		let amount = parseInt(result);
+    		let pageamount = Math.ceil(amount/20);
+    		for(let i=0;i<pageamount;i++){
+    			$('.pagination').append("<li><a href='javascript:void(0);' >"+ (i+1) +"</a></li>");
+    		}
+    		//3 4
+    		$('.pagination li:first').addClass('active');
+    		$('.pagination li').click(function(){
+    			let page = $(this).index();
+    			//这里留有空位给 获取第几页说说内容的函数
+    			getPage(page);
+    			//为啥这里不能用箭头函数
+    			$(this).addClass('active').siblings().removeClass("active");
+    		});
+    	})
+    </script>
+  
+    <div class="row" id="all-shuoshuo">
+
+    </div>
+   
+</div>
+<!-- /container -->
+<footer class="footer">
+    <span>Copyright&copy;&nbsp;2017 SHUO Inc. All Rights Reserved</span>
+</footer>
+
+<!--              放置说说内容的模板                       -->
+<script type="text/template" id="shuoTem">
+	 <div class="col-md-4 grid">
+        <h3><img width="40" class="avatar" src="/avatar/{{=avatar}}" alt=""/>{{=username}}说：</h3>
+
+        <p>{{=content}}</p>
+
+        <p>{{=datetime}}</p>
+
+        <p><a class="btn btn-info" href="#" role="button">查看详细</a></p>
+    </div>
+</script>
+
+<!--                 获取说说内容的ajax				-->
+<script type="text/javascript">
+	//先得到模板函数
+	let compiled = _.template($('#shuoTem').html());
+	//将getPage进行初始化
+	getPage(0);
+	//定义请求说说的函数
+	function getPage (page) {
+		//获取其他页面数据之前，先进把之前页面的数据进行清除
+		$('#all-shuoshuo').html('');
+		$.get(
+			'/getpageshuo?page='+page,
+			result=>{
+				//for循环里边不能套异步请求，要么同步（不支持)，要么迭代器
+				//result1是一个数组，用迭代器来解决异步请求
+				//result2是一个json，用来修改字典
+				iterator(0);
+				function iterator (i) {
+					if(i == result.length)return;
+					$.get(
+						'/getusersinfo?username='+result[i].username,
+						result2=>{
+							//console.log(typeof result2,result2);
+							//result，result2都是object，没有经过JSON.parse
+							//修改字典，给字典添加一项avatar
+							result[i].avatar = result2.avatar;
+							//组装模板
+							let htmlstring = compiled(result[i]);
+							//将获取的html字符串放入
+							$('#all-shuoshuo').append($(htmlstring));
+							iterator(i+1);
+						}
+					)
+				}
+			}
+		)
+	}
+	
+</script>
+
+</body>
+<!--     		   登录的ajax和发表说说的ajax			-->
+<script type="text/javascript">
+	//文本框获得焦点时，错误框消失
+	$('input').focus(()=>{
+		 $("#cuowukuang").fadeOut();
+	})
+	//登录
+	$('#denglu').click(()=>{
+		$.post(
+			'/dologin',
+			{
+				"username":$('#username').val(),
+				"password":$('#password').val(),
+			},
+			(result)=>{
+				console.log(typeof result,result)
+ 				switch(result){
+ 					case '1':
+ 						alert('登录成功，即将返回首页');
+ 						window.location = '/';
+ 						break;
+ 					case '-1':
+ 						$('#cuowukuang').fadeIn();
+ 						$('#cuowukuang').html('用户名不存在，请重新登录');
+ 						break;
+ 					case '-2':
+ 						$('#cuowukuang').fadeIn();
+ 						$('#cuowukuang').html('密码错误，请重新登录');
+ 						break;
+ 					case '-5':
+ 						$('#cuowukuang').fadeIn();
+ 						$('#cuowukuang').html('服务器错误');
+ 						break;
+ 				}
+ 			}
+		)
+	});
+	//发表说说
+	$('#deliver').click(()=>{
+		$.post(
+			'/deliver',
+			{'content':$('#content').val()},
+			result=>{
+			if(result == '1'){
+				$('#success').fadeIn(1500).fadeOut(1000);
+				//如果这样再跳转首页，太消耗性能了，还是用ajax好一点
+				//按照一定的规则，给新出的说说标记一下，通过ajax传给后台，然后后台查找数据返回前台
+				//这样，后台只查找一条数据，前台只渲染一条数据，性能会高不少
+				window.location = '/';
+			}
+		})
+	})
+</script>
+</html>

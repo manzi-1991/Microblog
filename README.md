@@ -1,3 +1,13 @@
+# 首先是下载使用说明
+1. git clone之后，先用npm安装好所需要的第三方包，package.json我已经配置好了，只需要在app.js所在目录打开cmd，输入npm install便可安装所需包
+2. 安装mongoDB，并且如何配置配置环境变量，使用全局命令，可能需要您自己进行学习了
+3. 将shushuo文件夹的内容清空；我在settings设定了数据库的数据库名称  'dburl':'mongodb://localhost:27017/shuoshuo'
+4. 开机数据库：安装好包之后，app.js所在目录另开一个命令行，输入mongod --dbpath [shuoshuo的绝对路径]
+5. 使用mongoDB：app.js所在目录再另开一个命令行，输入mongo
+6. 运行app.js：在第一步所在cmd输入 node app.js  便可前往浏览器了
+7. 输入  http://127.0.0.1:3000/  便可以进行登录了
+8. 以上步骤如果没有出错的话，那就是运行成功了，么么哒，哈哈
+  
 # Microblog前提准备工作与说明
 ## 初始化
 * npm init

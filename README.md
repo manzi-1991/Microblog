@@ -1,7 +1,7 @@
 #Microblog前提准备工作与说明
 ##初始化
-npm init
-npm install --save exprsee express-session ejs formidable gm mongdb
+* npm init
+* npm install --save exprsee express-session ejs formidable gm mongdb
 ##安装第三方包
 * express 框架
 * mongdb 数据库

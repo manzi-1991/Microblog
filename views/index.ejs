@@ -127,7 +127,7 @@
     			let page = $(this).index();
     			//这里留有空位给 获取第几页说说内容的函数
     			getPage(page);
-    			//为啥这里不能用箭头函数
+    			//为啥这里不能用箭头函数，因为这里是jq的地盘啊，你傻啊，我的天
     			$(this).addClass('active').siblings().removeClass("active");
     		});
     	})
@@ -157,6 +157,7 @@
 </script>
 
 <!--                 获取说说内容的ajax				-->
+<!--		     可以尝试使用fetch   promise 		         -->
 <script type="text/javascript">
 	//先得到模板函数
 	let compiled = _.template($('#shuoTem').html());

@@ -8,6 +8,8 @@ const path = require("path");
 
 //显示首页
 exports.showIndex = (req,res,next)=>{
+	//session是存储在服务器上的，并且加密，不逆向破解
+	//对浏览器发过来的sessionID进行匹配，如果正确才能进行用户操作
 	if(req.session.login == '1'){
 		db.find('users',{"username":req.session.username},(err,result)=>{
 			let avatar = result[0].avatar || 'moren.jpg';
